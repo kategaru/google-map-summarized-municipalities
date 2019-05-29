@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <style>
+      #map {
+        height: 100%;
+      }
+
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="map"></div>
+    <script>
+      let map
+      let selectedArea = []
+
+      function initMap() {
+        const infowindow = new google.maps.InfoWindow()
+
+        map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 9,
+          center: new google.maps.LatLng(35.681236, 139.767125),
+          mapTypeId: 'roadmap'
+        })
+
+        map.data.loadGeoJson('jp.json')
+
+        map.data.addListener('click', function(event) {
+          const prefName = event.feature.getProperty("prefName")
+          const divisionName = event.feature.getProperty("divisionName")
+          const areaName = prefName + ' ' + divisionName
+
+          if (selectedArea.includes(areaName)) {
+            map.data.overrideStyle(event.feature, {
+              fillColor: "#FFFFFF",
+              fillOpacity: .01,
+            })
+
+            selectedArea = selectedArea.filter(area => area !== areaName)
+          } else {
+            map.data.overrideStyle(event.feature, {
+              fillColor: 'blue',
+              fillOpacity: 0.5,
+            })
+
+            selectedArea.push(areaName)
+          }
+        })
+
+        map.data.setStyle({
+          strokeWeight: 1,
+          fillColor: "#FFFFFF",
+          fillOpacity: .01,
+          strokeColor: '#000000'
+        })
+
+        map.data.addListener('mouseover', function (event) {
+          const prefName = event.feature.getProperty("prefName")
+          const divisionName = event.feature.getProperty("divisionName")
+          const areaName = prefName + ' ' + divisionName
+          const latLng = event.latLng
+
+          infowindow.setContent(areaName)
+          infowindow.setPosition(latLng)
+          infowindow.open(map)
+        })
+
+        map.data.addListener('mouseover', function (event) {
+          infowindow.open(map)
+        })
+
+        map.data.addListener('mouseout', function (event) {
+          infowindow.close(map)
+        })
+      }
+    </script>
+    <script async defer
+      src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&language=ja&region=JP&callback=initMap">
+    </script>
+  </body>
+</html>
